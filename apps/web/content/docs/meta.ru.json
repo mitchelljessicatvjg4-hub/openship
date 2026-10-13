@@ -1,0 +1,22 @@
+{
+  "title": "Документация",
+  "pages": [
+    "index",
+    "---Начало работы---",
+    "getting-started",
+    "---Разработка и эксплуатация---",
+    "guides",
+    "dashboard",
+    "---Для разработчиков---",
+    "api",
+    "cli",
+    "mcp",
+    "reference",
+    "---Платформа---",
+    "architecture",
+    "security",
+    "---Помощь---",
+    "troubleshooting"
+  ],
+  "root": true
+}

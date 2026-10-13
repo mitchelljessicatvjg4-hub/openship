@@ -35,7 +35,7 @@ const nextConfig = {
   turbopack: {
     root: path.resolve(__dirname, "../.."),
     resolveAlias: {
-      "@/.source/*": "./.source/*",
+      "@/.source/*": "./apps/web/.source/*",
     },
   },
 };

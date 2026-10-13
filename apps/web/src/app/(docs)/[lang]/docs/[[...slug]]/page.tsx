@@ -1,5 +1,4 @@
 import { docsSource } from "@/lib/source";
-import { SITE_URL } from "@/lib/sitemap-builder";
 import { getMDXComponents } from "@/mdx-components";
 import {
   DocsPage,
@@ -12,10 +11,8 @@ import type { ComponentType } from "react";
 import type { MDXComponents } from "mdx/types";
 import type { Metadata } from "next";
 
-type PageProps = { params: Promise<{ slug?: string[] }> };
+type PageProps = { params: Promise<{ lang: string; slug?: string[] }> };
 
-// The loader's base PageData type doesn't statically expose the MDX body/toc,
-// so narrow it to the doc shape (toc type derived from DocsPage itself).
 type DocData = {
   title: string;
   description?: string;
@@ -25,8 +22,8 @@ type DocData = {
 };
 
 export default async function Page({ params }: PageProps) {
-  const { slug } = await params;
-  const page = docsSource.getPage(slug);
+  const { lang, slug } = await params;
+  const page = docsSource.getPage(slug, lang);
   if (!page) notFound();
 
   const data = page.data as DocData;
@@ -48,39 +45,35 @@ export function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { slug } = await params;
-  const page = docsSource.getPage(slug);
+  const { lang, slug } = await params;
+  const page = docsSource.getPage(slug, lang);
   if (!page) notFound();
 
   const data = page.data as DocData;
   const title = `${data.title} – Openship Docs`;
   const description = data.description;
 
-  // Per-page social card. Served by /docs-og (a route handler, since an image
-  // segment can't nest under this optional catch-all) and pre-rendered at build.
-  const ogImage = {
-    url: `${SITE_URL}/docs-og${slug?.length ? `/${slug.join("/")}` : ""}`,
-    width: 1200,
-    height: 630,
-    alt: title,
-  };
+  const pathname = page.url;
+  const ogPath = slug && slug.length > 0 ? `/docs-og/${slug.join("/")}` : "/docs-og";
 
   return {
     title,
     description,
+    alternates: {
+      canonical: pathname,
+    },
     openGraph: {
       title,
       description,
-      url: page.url,
-      siteName: "Openship",
       type: "article",
-      images: [ogImage],
+      url: pathname,
+      images: [{ url: ogPath, width: 1200, height: 630, alt: title }],
     },
-    twitter: { card: "summary_large_image", title, description, images: [ogImage] },
-    // Advertise the raw-markdown variant (llms.txt convention) alongside canonical.
-    alternates: {
-      canonical: page.url,
-      types: { "text/markdown": `${SITE_URL}${page.url}.md` },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [ogPath],
     },
   };
 }

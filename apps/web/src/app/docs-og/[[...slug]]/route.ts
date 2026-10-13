@@ -8,7 +8,7 @@ import { renderDocsOgImage } from "@/lib/docs-og";
  * docs route is an OPTIONAL catch-all (`[[...slug]]`), and Next refuses an image
  * segment nested under one ("optional catch-all must be the last part of the
  * URL"). Same shape as the sibling `docs-raw` handler, and referenced explicitly
- * from the docs page's `generateMetadata`.
+ * from the docs page's `generateMetadata``.
  *
  * force-static + generateStaticParams → every card is a PNG written at build
  * time, so a crawler never triggers a render.
@@ -16,7 +16,16 @@ import { renderDocsOgImage } from "@/lib/docs-og";
 export const dynamic = "force-static";
 
 export function generateStaticParams() {
-  return docsSource.generateParams();
+  const seen = new Set<string>();
+  const params: { slug?: string[] }[] = [];
+  for (const p of docsSource.generateParams()) {
+    const key = (p.slug || []).join("/");
+    if (!seen.has(key)) {
+      seen.add(key);
+      params.push({ slug: p.slug });
+    }
+  }
+  return params;
 }
 
 export async function GET(

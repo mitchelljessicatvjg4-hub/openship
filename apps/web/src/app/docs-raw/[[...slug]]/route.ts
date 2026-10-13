@@ -9,7 +9,16 @@ import { pageToMarkdown, type LlmPage } from "@/lib/llms";
 export const dynamic = "force-static";
 
 export function generateStaticParams() {
-  return docsSource.generateParams();
+  const seen = new Set<string>();
+  const params: { slug?: string[] }[] = [];
+  for (const p of docsSource.generateParams()) {
+    const key = (p.slug || []).join("/");
+    if (!seen.has(key)) {
+      seen.add(key);
+      params.push({ slug: p.slug });
+    }
+  }
+  return params;
 }
 
 export async function GET(
